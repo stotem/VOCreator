@@ -96,10 +96,10 @@
         [mDic setObject:self.mDic${codeName} forKey:@"${property.name}"];
         #else
         NSMutableDictionary *tmpMDic${codeName}= [[NSMutableDictionary alloc]init];
-            for (id<NSCopying> key in [self.mDic${codeName} allKeys]) {
-                [tmpMDic${codeName} setObject:[self.mDic${codeName}[key] dictionary] forKey:key];
-            }
-            [mDic setObject:tmpMDic${codeName} forKey:@"${property.name}"];
+        for (id<NSCopying> key in [self.mDic${codeName} allKeys]) {
+            [tmpMDic${codeName} setObject:[self.mDic${codeName}[key] dictionary] forKey:key];
+        }
+        [mDic setObject:tmpMDic${codeName} forKey:@"${property.name}"];
         #end
 
     #else

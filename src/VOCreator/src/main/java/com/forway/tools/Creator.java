@@ -4,6 +4,7 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.nutz.json.JsonField;
+import sun.reflect.generics.reflectiveObjects.WildcardTypeImpl;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -171,7 +172,9 @@ public class Creator {
         if (declaredField.getType().isAssignableFrom(List.class) || declaredField.getType().isAssignableFrom(Set.class) || declaredField.getType().equals(Map.class)) {
             Type[] types = ((ParameterizedType) declaredField.getGenericType()).getActualTypeArguments();
             if (types.length > 0) {
-                Class argsClass = (Class) types[types.length-1];
+                Type argsType = types[types.length-1];
+                // 如果泛型为?,则按int处理
+                Class argsClass = (argsType instanceof WildcardTypeImpl) ? Integer.class:(Class)argsType;
                 property.setGenericsType(argsClass.getSimpleName());
 
                 if (!argsClass.isPrimitive() && !argsClass.equals(Integer.class) && !argsClass.equals(String.class)
