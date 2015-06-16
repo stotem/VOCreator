@@ -5,7 +5,7 @@
 - (id)initWithJson:(NSDictionary *)aDicJson {
     self = [super initWithJson:aDicJson];
     if(self && aDicJson) {
-        _strMsg  = [aDicJson objectForKey:@"msg"];
+        _strMessage  = [aDicJson objectForKey:@"message"];
         _numCode  = [aDicJson objectForKey:@"code"];
     }
     return self;
@@ -13,7 +13,7 @@
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
     [super encodeWithCoder:aCoder];
-    [aCoder encodeObject:self.strMsg forKey:@"cache_msg"];
+    [aCoder encodeObject:self.strMessage forKey:@"cache_message"];
     [aCoder encodeObject:self.numCode forKey:@"cache_code"];
     
 }
@@ -22,7 +22,7 @@
 - (id)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if(self) {
-        _strMsg = [aDecoder decodeObjectForKey:@"cache_msg"];
+        _strMessage = [aDecoder decodeObjectForKey:@"cache_message"];
         _numCode = [aDecoder decodeObjectForKey:@"cache_code"];
     }
     return self;
@@ -30,8 +30,8 @@
 
 - (NSMutableDictionary *)dictionary {
     NSMutableDictionary *mDic = [super dictionary];
-    if (self.strMsg) {
-        [mDic setObject:self.strMsg forKey:@"msg"];
+    if (self.strMessage) {
+        [mDic setObject:self.strMessage forKey:@"message"];
     }
     if (self.numCode) {
         [mDic setObject:self.numCode forKey:@"code"];
@@ -42,7 +42,7 @@
 -(NSString *)description {
     NSString *result = [super description];
     result = [result stringByAppendingFormat:@"numCode : %@\n",self.numCode];
-    result = [result stringByAppendingFormat:@"strMsg : %@\n",self.strMsg];
+    result = [result stringByAppendingFormat:@"strMessage : %@\n",self.strMessage];
     return result;
 }
 

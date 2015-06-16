@@ -4,6 +4,6 @@
 @interface ${prefix}Response${suffix} : ${prefix}Base${suffix}
 
 @property(nonatomic,strong) NSNumber *numCode;
-@property(nonatomic,copy)   NSString *strMsg;
+@property(nonatomic,copy)   NSString *strMessage;
 
 @end
