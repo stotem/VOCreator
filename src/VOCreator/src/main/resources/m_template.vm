@@ -76,7 +76,7 @@
         [mDic setObject:self.str${codeName} forKey:@"${property.name}"];
     }
     #elseif(${property.type} == "double" || ${property.type} == "Double" || ${property.type} == "short" || ${property.type} == "Short" || ${property.type} == "int" || ${property.type} == "Integer"||${property.type} == "long"||${property.type} == "Long"||${property.type} == "float"||${property.type} == "Float")
-    if (self.str${codeName}) {
+    if (self.num${codeName}) {
         [mDic setObject:self.num${codeName} forKey:@"${property.name}"];
     }
     #elseif(${property.type} == "List" || ${property.type} == "Set")
