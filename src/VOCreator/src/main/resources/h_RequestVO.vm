@@ -1,0 +1,8 @@
+#import <Foundation/Foundation.h>
+#import "${prefix}Base${suffix}.h"
+#import "${prefix}Token${suffix}.h"
+
+@interface ${prefix}Request${suffix} : ${prefix}Base${suffix}
+@property (nonatomic,strong) ${prefix}Token${suffix} *token${suffix};
+@property (nonatomic,copy)   NSString *strDeviceId;
+@end

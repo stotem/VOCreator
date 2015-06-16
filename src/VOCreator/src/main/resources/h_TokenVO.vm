@@ -1,0 +1,10 @@
+#import <Foundation/Foundation.h>
+#import "${prefix}Base${suffix}.h"
+
+@interface ${prefix}Token${suffix} : ${prefix}Base${suffix} 
+@property (nonatomic,strong) NSNumber *numUserId;
+@property (nonatomic,strong) NSNumber *numRequestTime;
+@property (nonatomic,copy)   NSString *strSecretkey;
+@property (nonatomic,strong) NSNumber *numDeviceType;
+@property (nonatomic,copy)   NSString *strVersion;
+@end

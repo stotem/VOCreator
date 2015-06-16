@@ -1,0 +1,66 @@
+#import "${prefix}Token${suffix}.h"
+
+@implementation ${prefix}Token${suffix}
+
+- (id)initWithJson:(NSDictionary *)aDicJson {
+    self = [super initWithJson:aDicJson];
+    if(self && aDicJson) {
+        _numUserId = [aDicJson objectForKey:@"userId"];
+        _numRequestTime = [aDicJson objectForKey:@"requestTime"];
+        _strSecretkey = [aDicJson objectForKey:@"secretkey"];
+        _numDeviceType = [aDicJson objectForKey:@"deviceType"];
+        _strVersion = [aDicJson objectForKey:@"version"];
+    }
+    return self;
+}
+
+- (id)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+    if(self) {
+        _numUserId = [aDecoder decodeObjectForKey:@"cache_userId"];
+        _numRequestTime = [aDecoder decodeObjectForKey:@"cache_requestTime"];
+        _strSecretkey = [aDecoder decodeObjectForKey:@"cache_secretkey"];
+        _numDeviceType = [aDecoder decodeObjectForKey:@"cache_deviceType"];
+        _strVersion = [aDecoder decodeObjectForKey:@"cache_version"];
+    }
+return self;
+}
+
+- (NSMutableDictionary *)dictionary {
+    NSMutableDictionary *mDic = [super dictionary];
+    if (self.numUserId) {
+        [mDic setObject:self.numUserId forKey:@"userId"];
+    }
+    if (self.numRequestTime) {
+        [mDic setObject:self.numRequestTime forKey:@"requestTime"];
+    }
+    if (self.strSecretkey) {
+        [mDic setObject:self.strSecretkey forKey:@"secretkey"];
+    }
+    [mDic setObject:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"] forKey:@"version"];
+    if (self.numDeviceType) {
+        [mDic setObject:self.numDeviceType forKey:@"deviceType"];
+    }
+    return mDic;
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [super encodeWithCoder:aCoder];
+    [aCoder encodeObject:self.numUserId forKey:@"cache_userId"];
+    [aCoder encodeObject:self.numRequestTime forKey:@"cache_requestTime"];
+    [aCoder encodeObject:self.strSecretkey forKey:@"cache_secretkey"];
+    [aCoder encodeObject:self.numDeviceType forKey:@"cache_deviceType"];
+    [aCoder encodeObject:self.strVersion forKey:@"cache_version"];
+}
+
+- (NSString *)description {
+    NSString *result = [super description];
+    result = [result stringByAppendingFormat:@"userId : %@\n",self.numUserId];
+    result = [result stringByAppendingFormat:@"requestTime : %@\n",self.numRequestTime];
+    result = [result stringByAppendingFormat:@"secretkey : %@\n",self.strSecretkey];
+    result = [result stringByAppendingFormat:@"version : %@\n",self.strVersion];
+    result = [result stringByAppendingFormat:@"deviceType : %@\n",self.numDeviceType];
+    return result;
+}
+
+@end

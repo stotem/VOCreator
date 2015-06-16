@@ -1,0 +1,55 @@
+#import "${prefix}Request${suffix}.h"
+
+@implementation ${prefix}Request${suffix}
+
+- (id)init {
+    self = [super init];
+    if (self) {
+        _strDeviceId = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+    }
+    return self;
+}
+
+- (id)initWithJson:(NSDictionary *)aDicJson {
+    self = [super initWithJson:aDicJson];
+    if(self && aDicJson) {
+        _token${suffix} = [[${prefix}Token${suffix} alloc] initWithJson:[aDicJson objectForKey:@"token"]];
+        _strDeviceId = [aDicJson objectForKey:@"deviceId"];
+    }
+    return self;
+}
+
+- (NSMutableDictionary *)dictionary {
+    NSMutableDictionary *mDic = [super dictionary];
+    [mDic setObject:[self.token${suffix} dictionary] forKey:@"token"];
+    if (self.strDeviceId) {
+        [mDic setObject:self.strDeviceId forKey:@"deviceId"];
+    }
+    return mDic;
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [super encodeWithCoder:aCoder];
+    [aCoder encodeObject:self.token${suffix} forKey:@"cache_token"];
+    [aCoder encodeObject:self.strDeviceId forKey:@"cache_deviceId"];
+}
+
+
+- (id)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+    if(self) {
+        _token${suffix}= [aDecoder decodeObjectForKey:@"cache_token"];
+        _strDeviceId = [aDecoder decodeObjectForKey:@"cache_deviceId"];
+    }
+    return self;
+}
+
+- (NSString *)description {
+    NSString *result = [super description];
+    result = [result stringByAppendingFormat:@"token : %@\n",self.token${suffix}];
+    result = [result stringByAppendingFormat:@"deviceId : %@\n",self.strDeviceId];
+    return result;
+}
+
+
+@end
