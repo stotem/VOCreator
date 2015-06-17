@@ -8,7 +8,7 @@
     if(self && aDicJson) {
     #foreach(${property} in ${entity.properties})
         #set($codeName = ${property.name.substring(0,1).toUpperCase()}) #set($codeName = $codeName+${property.name.substring(1)})
-        #if(${property.type} == "String"||${property.type} == "Date")
+        #if(${property.type} == "String"||${property.type} == "Date"||${property.type} == "Timestamp")
     _str${codeName} = [aDicJson objectForKey:@"${property.name}"];
         #elseif(${property.type} == "double"||${property.type} == "Double"||${property.type} == "short"||${property.type} == "Short"||${property.type} == "int"||${property.type} == "Integer"||${property.type} == "long"||${property.type} == "Long"||${property.type} == "float"||${property.type} == "Float")
     _num${codeName} = [aDicJson objectForKey:@"${property.name}"];
@@ -50,7 +50,7 @@
     if(self) {
     #foreach(${property} in ${entity.properties})
         #set($codeName = ${property.name.substring(0,1).toUpperCase()}) #set($codeName = $codeName+${property.name.substring(1)})
-        #if(${property.type} == "String"||${property.type} == "Date")
+        #if(${property.type} == "String"||${property.type} == "Date"||${property.type} == "Timestamp")
             _str${codeName} = [aDecoder decodeObjectForKey:@"cache_${property.name}"];
         #elseif(${property.type} == "double"||${property.type} == "Double"||${property.type} == "short"||${property.type} == "Short"||${property.type} == "int"||${property.type} == "Integer"||${property.type} == "long"||${property.type} == "Long"||${property.type} == "float"||${property.type} == "Float")
             _num${codeName} = [aDecoder decodeObjectForKey:@"cache_${property.name}"];
@@ -71,7 +71,7 @@
     NSMutableDictionary *mDic = [super dictionary];
 #foreach(${property} in ${entity.properties})
     #set($codeName = ${property.name.substring(0,1).toUpperCase()}) #set($codeName = $codeName+${property.name.substring(1)})
-    #if(${property.type} == "String"||${property.type} == "Date")
+    #if(${property.type} == "String"||${property.type} == "Date"||${property.type} == "Timestamp")
     if (self.str${codeName}) {
         [mDic setObject:self.str${codeName} forKey:@"${property.name}"];
     }
@@ -113,7 +113,7 @@
     [super encodeWithCoder:aCoder];
 #foreach(${property} in ${entity.properties})
     #set($codeName = ${property.name.substring(0,1).toUpperCase()}) #set($codeName = $codeName+${property.name.substring(1)})
-    #if(${property.type} == "String"||${property.type} == "Date")
+    #if(${property.type} == "String"||${property.type} == "Date"||${property.type} == "Timestamp")
     [aCoder encodeObject:self.str${codeName} forKey:@"cache_${property.name}"];
     #elseif(${property.type} == "double"||${property.type} == "Double"||${property.type} == "short"||${property.type} == "Short"||${property.type} == "int"||${property.type} == "Integer"||${property.type} == "long"||${property.type} == "Long"||${property.type} == "float"||${property.type} == "Float")
     [aCoder encodeObject:self.num${codeName} forKey:@"cache_${property.name}"];
@@ -131,7 +131,7 @@
     NSString *result = [super description];
 #foreach(${property} in ${entity.properties})
     #set($codeName = ${property.name.substring(0,1).toUpperCase()}) #set($codeName = $codeName+${property.name.substring(1)})
-    #if(${property.type} == "String"||${property.type} == "Date")
+    #if(${property.type} == "String"||${property.type} == "Date"||${property.type} == "Timestamp")
     result = [result stringByAppendingFormat:@"${property.name} : %@\n",self.str${codeName}];
     #elseif(${property.type} == "double"||${property.type} == "Double"||${property.type} == "short"||${property.type} == "Short"||${property.type} == "int"||${property.type} == "Integer"||${property.type} == "long"||${property.type} == "Long"||${property.type} == "float"||${property.type} == "Float")
     result = [result stringByAppendingFormat:@"${property.name} : %@\n",self.num${codeName}];

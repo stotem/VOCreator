@@ -10,6 +10,7 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.sql.Timestamp;
 import java.util.*;
 
 /**
@@ -162,11 +163,14 @@ public class Creator {
     }
 
     private static void getAllProperty(Field declaredField, Entity entity) {
+        if (declaredField.getName().indexOf("_") > -1) {
+            return;
+        }
+        if (declaredField.getName().equalsIgnoreCase("serialVersionUID")) {
+            return;
+        }
         Property property = new Property();
         property.setName(declaredField.getName());
-        if (property.getName().indexOf("_") > -1) {
-             return;
-        }
         property.setType(declaredField.getType().getSimpleName());
 
         if (declaredField.getType().isAssignableFrom(List.class) || declaredField.getType().isAssignableFrom(Set.class) || declaredField.getType().equals(Map.class)) {
@@ -174,18 +178,26 @@ public class Creator {
             if (types.length > 0) {
                 Type argsType = types[types.length-1];
                 // 如果泛型为?,则按int处理
-                Class argsClass = (argsType instanceof WildcardTypeImpl) ? Integer.class:(Class)argsType;
+
+                Class argsClass = null;
+                if (argsType instanceof Class) {
+                    argsClass = (Class)argsType;
+                }
+                else {
+                    argsClass = Integer.class;
+                    System.err.println("[WARN] entity "+entity.getClassName()+"."+property.getName()+" type error."+argsType);
+                }
                 property.setGenericsType(argsClass.getSimpleName());
 
                 if (!argsClass.isPrimitive() && !argsClass.equals(Integer.class) && !argsClass.equals(String.class)
-                        && !argsClass.equals(Long.class) && !argsClass.equals(Date.class) && !argsClass.equals(Map.class)){
+                        && !argsClass.equals(Long.class) && !argsClass.equals(Timestamp.class) && !argsClass.equals(Date.class) && !argsClass.equals(Map.class)){
                     entity.addImportClassName(argsClass.getSimpleName());
                 }
             }
         }
         else if (!declaredField.getType().isPrimitive() && !declaredField.getType().equals(Integer.class) && !declaredField.getType().equals(String.class)
                 && !declaredField.getType().equals(Long.class) && !declaredField.getType().equals(Date.class) && !declaredField.getType().equals(Float.class)
-                && !declaredField.getType().equals(Double.class)&& !declaredField.getType().equals(Short.class)){
+                && !declaredField.getType().equals(Double.class)&& !declaredField.getType().equals(Timestamp.class) && !declaredField.getType().equals(Short.class)){
             entity.addImportClassName(declaredField.getType().getSimpleName());
         }
         JsonField jsonField = declaredField.getAnnotation(JsonField.class);
