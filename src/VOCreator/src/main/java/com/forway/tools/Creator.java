@@ -1,5 +1,6 @@
 package com.forway.tools;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
@@ -8,6 +9,7 @@ import sun.reflect.generics.reflectiveObjects.WildcardTypeImpl;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.sql.Timestamp;
@@ -155,25 +157,57 @@ public class Creator {
         entity.setPackageName(clas.getPackage().getName());
         entity.setSuperClassName(clas.getSuperclass().getSimpleName());
         Field[] declaredFields = clas.getDeclaredFields();
+        Object obj = clas.newInstance();
         for (Field declaredField : declaredFields) {
-            getAllProperty(declaredField, entity);
+            getAllProperty(obj,declaredField, entity);
         }
         return entity;
 
     }
 
-    private static void getAllProperty(Field declaredField, Entity entity) {
-        if (declaredField.getName().indexOf("_") > -1) {
-            return;
-        }
+    private static void getAllProperty(Object obj, Field declaredField, Entity entity) {
         if (declaredField.getName().equalsIgnoreCase("serialVersionUID")) {
             return;
         }
+
+        // 如果为常量
+        Class<?> fieldType = declaredField.getType();
+        int modifiers = declaredField.getModifiers();
+        if (Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers)
+                && (fieldType.isAssignableFrom(int.class) || fieldType.isAssignableFrom(Integer.class)
+                || fieldType.isAssignableFrom(float.class) || fieldType.isAssignableFrom(Float.class)
+                || fieldType.isAssignableFrom(double.class) || fieldType.isAssignableFrom(Double.class)
+                || fieldType.isAssignableFrom(long.class) || fieldType.isAssignableFrom(Long.class) || fieldType.isAssignableFrom(String.class)
+                || fieldType.isAssignableFrom(boolean.class) || fieldType.isAssignableFrom(Boolean.class))) {
+            try {
+                Object value = declaredField.get(obj);
+                if (value == null) {
+                    return;
+                }
+                ConstProperty property = new ConstProperty();
+                property.setName(declaredField.getName());
+                if (fieldType.isAssignableFrom(boolean.class) || fieldType.isAssignableFrom(Boolean.class)) {
+                    property.setValue((boolean)value ? "1":"0");
+                } else {
+                    property.setValue(value.toString().trim());
+                }
+                if (fieldType.isAssignableFrom(String.class)) {
+                    entity.addConstantString(property);
+                }
+                else {
+                    entity.addConstants(property);
+                }
+            } catch (IllegalAccessException e) {
+                System.err.println("[WARN] not found value of const field "+entity.getClassName()+"."+declaredField.getName());
+            }
+            return;
+        }
+
         Property property = new Property();
         property.setName(declaredField.getName());
-        property.setType(declaredField.getType().getSimpleName());
+        property.setType(fieldType.getSimpleName());
 
-        if (declaredField.getType().isAssignableFrom(List.class) || declaredField.getType().isAssignableFrom(Set.class) || declaredField.getType().equals(Map.class)) {
+        if (fieldType.isAssignableFrom(List.class) || fieldType.isAssignableFrom(Set.class) || fieldType.equals(Map.class)) {
             Type[] types = ((ParameterizedType) declaredField.getGenericType()).getActualTypeArguments();
             if (types.length > 0) {
                 Type argsType = types[types.length-1];
@@ -195,10 +229,10 @@ public class Creator {
                 }
             }
         }
-        else if (!declaredField.getType().isPrimitive() && !declaredField.getType().equals(Integer.class) && !declaredField.getType().equals(String.class)
-                && !declaredField.getType().equals(Long.class) && !declaredField.getType().equals(Date.class) && !declaredField.getType().equals(Float.class)
-                && !declaredField.getType().equals(Double.class)&& !declaredField.getType().equals(Timestamp.class) && !declaredField.getType().equals(Short.class)){
-            entity.addImportClassName(declaredField.getType().getSimpleName());
+        else if (!fieldType.isPrimitive() && !fieldType.equals(Integer.class) && !fieldType.equals(String.class)
+                && !fieldType.equals(Long.class) && !fieldType.equals(Date.class) && !fieldType.equals(Float.class)
+                && !fieldType.equals(Double.class)&& !fieldType.equals(Timestamp.class) && !fieldType.equals(Short.class)){
+            entity.addImportClassName(fieldType.getSimpleName());
         }
         JsonField jsonField = declaredField.getAnnotation(JsonField.class);
         property.setShortName(jsonField != null ? jsonField.value() : property.getName());

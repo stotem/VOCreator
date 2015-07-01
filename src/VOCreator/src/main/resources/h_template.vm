@@ -11,6 +11,18 @@
 #else
 #import "${prefix}${entity.superClassName}${suffix}.h"
 #end
+#if(${entity.constants})
+
+typedef NS_ENUM(NSUInteger, ${entity.className.toUpperCase()}_CONSTANTS) {
+#foreach(${constant} in ${entity.constants})
+    ${constant.name.toUpperCase()} = ${constant.value},
+#end
+};
+
+#end
+#foreach(${constant} in ${entity.constantString})
+static NSString const *${entity.className.toUpperCase()}_${constant.name.toUpperCase()} = @"${constant.value}";
+#end
 
 @interface ${prefix}${entity.className}${suffix} :#if(${entity.superClassName} == "BaseReq") ${prefix}Request${suffix} #elseif(${entity.superClassName} == "Object") ${prefix}Base${suffix} #elseif(${entity.superClassName} == "BaseResp") ${prefix}Response${suffix} #else ${prefix}${entity.superClassName}${suffix} #end
 
@@ -18,4 +30,5 @@
 #set($codeName = ${property.name.substring(0,1).toUpperCase()}) #set($codeName = $codeName+${property.name.substring(1)})
 @property (nonatomic,#if(${property.type} == "String"||${property.type} == "Date") copy#else strong#end) #if(${property.type} == "String"||${property.type} == "Date"||${property.type} == "Timestamp") NSString *str${codeName}#elseif(${property.type} == "double"||${property.type} == "Double"||${property.type} == "short"||${property.type} == "Short"||${property.type} == "int"||${property.type} == "Integer"||${property.type} == "long"||${property.type} == "Long"||${property.type} == "float"||${property.type} == "Float") NSNumber *num${codeName}#elseif(${property.type} == "List"||${property.type} == "Set") NSMutableArray *mArray${codeName}#elseif(${property.type} == "Map") NSMutableDictionary *mDic${codeName}#else ${prefix}${property.type}${suffix} *${property.name}${suffix}#end;
 #end
+
 @end

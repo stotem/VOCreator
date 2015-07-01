@@ -13,6 +13,8 @@ public class Entity {
     private String superClassName;
     private String packageName;
     private List<Property> properties;
+    private Set<ConstProperty> constants;
+    private Set<ConstProperty> constantString;
     private Set<String> importClassName;
 
     public String getPackageName() {
@@ -63,8 +65,31 @@ public class Entity {
         getProperties().add(property);
     }
 
+    public Set<ConstProperty> getConstants() {
+        return constants;
+    }
+
+    public void setConstants(Set<ConstProperty> constants) {
+        this.constants = constants;
+    }
+
     public void setProperties(List<Property> properties) {
         this.properties = properties;
+    }
+
+    public Set<ConstProperty> getConstantString() {
+        return constantString;
+    }
+
+    public void setConstantString(Set<ConstProperty> constantString) {
+        this.constantString = constantString;
+    }
+
+    public void addConstantString(ConstProperty property) {
+        if (constantString == null) {
+            setConstantString(new HashSet<ConstProperty>());
+        }
+        getConstantString().add(property);
     }
 
     @Override
@@ -74,6 +99,13 @@ public class Entity {
                 ", superClassName='" + superClassName + '\'' +
                 ", properties=" + properties +
                 '}';
+    }
+
+    public void addConstants(ConstProperty property) {
+        if (constants == null) {
+            setConstants(new HashSet<ConstProperty>());
+        }
+        getConstants().add(property);
     }
 }
 
