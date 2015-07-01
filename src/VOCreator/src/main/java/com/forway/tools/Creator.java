@@ -79,7 +79,7 @@ public class Creator {
         VelocityContext root = new VelocityContext();
         String prefix = properties.getProperty("VO.Prefix", "");
         String suffix = properties.getProperty("VO.Suffix", "");
-        String outDic = properties.getProperty("VO.Output","creator/");
+        String outDic = properties.getProperty("VO.Output", "creator/");
         outDic = outDic.endsWith("/") ? outDic:outDic+"/";
         root.put("prefix", prefix);
         root.put("suffix", suffix);
@@ -157,7 +157,11 @@ public class Creator {
         entity.setPackageName(clas.getPackage().getName());
         entity.setSuperClassName(clas.getSuperclass().getSimpleName());
         Field[] declaredFields = clas.getDeclaredFields();
-        Object obj = clas.newInstance();
+
+        Object obj = null;
+        try {
+            obj = clas.newInstance();
+        }catch(Exception e) {}
         for (Field declaredField : declaredFields) {
             getAllProperty(obj,declaredField, entity);
         }
@@ -173,7 +177,7 @@ public class Creator {
         // 如果为常量
         Class<?> fieldType = declaredField.getType();
         int modifiers = declaredField.getModifiers();
-        if (Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers)
+        if (obj != null && Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers)
                 && (fieldType.isAssignableFrom(int.class) || fieldType.isAssignableFrom(Integer.class)
                 || fieldType.isAssignableFrom(float.class) || fieldType.isAssignableFrom(Float.class)
                 || fieldType.isAssignableFrom(double.class) || fieldType.isAssignableFrom(Double.class)
