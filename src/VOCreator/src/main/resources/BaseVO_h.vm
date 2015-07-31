@@ -1,0 +1,25 @@
+#import <Foundation/Foundation.h>
+
+@interface ${prefix}Base${suffix} : NSObject<NSCoding>
+- (id)initWithJson:(NSDictionary *)aDicJson;
+- (NSData *)jsonData;
+- (NSMutableDictionary *)dictionary;
+@end
+
+@interface ${prefix}Token${suffix} : ${prefix}Base${suffix}
+@property (nonatomic,strong) NSNumber *numUserId;
+@property (nonatomic,strong) NSNumber *numRequestTime;
+@property (nonatomic,copy)   NSString *strSecretkey;
+@property (nonatomic,strong) NSNumber *numDeviceType;
+@property (nonatomic,copy)   NSString *strVersion;
+@end
+
+@interface ${prefix}Request${suffix} : ${prefix}Base${suffix}
+@property (nonatomic,strong) ${prefix}Token${suffix} *token${suffix};
+@property (nonatomic,copy)   NSString *strDeviceId;
+@end
+
+@interface ${prefix}Response${suffix} : ${prefix}Base${suffix}
+@property(nonatomic,strong) NSNumber *numCode;
+@property(nonatomic,copy)   NSString *strMessage;
+@end

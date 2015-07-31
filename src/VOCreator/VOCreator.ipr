@@ -186,6 +186,14 @@
     <mapping directory="" vcs="" />
   </component>
   <component name="libraryTable">
+    <library name="diligrp-website-util-0.0.1-SNAPSHOT">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/diligrp-website-util-0.0.1-SNAPSHOT.jar!/" />
+        <root url="jar://$PROJECT_DIR$/mobsite-getway-domain-0.0.1-SNAPSHOT.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
     <library name="Maven: ant:ant:1.6.5">
       <CLASSES>
         <root url="jar://$MAVEN_REPOSITORY$/ant/ant/1.6.5/ant-1.6.5.jar!/" />

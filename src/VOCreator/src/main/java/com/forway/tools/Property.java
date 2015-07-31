@@ -49,6 +49,27 @@ public class Property {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Property property = (Property) o;
+
+        if (!name.equals(property.name)) return false;
+        if (codeName != null ? !codeName.equals(property.codeName) : property.codeName != null) return false;
+        return shortName.equals(property.shortName);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + (codeName != null ? codeName.hashCode() : 0);
+        result = 31 * result + shortName.hashCode();
+        return result;
+    }
+
+    @Override
     public String toString() {
             return "Property{" +
                     "name='" + name + '\'' +

@@ -1,0 +1,200 @@
+#import "${prefix}Base${suffix}.h"
+
+@implementation ${prefix}Base${suffix}
+
+- (id)initWithJson:(NSDictionary *)aDicJson {
+    self = [super init];
+    if(self) {
+    }
+    return self;
+}
+
+- (NSData *)jsonData {
+    return [NSJSONSerialization dataWithJSONObject:[self dictionary] options:NSJSONWritingPrettyPrinted error:nil];
+}
+
+- (NSMutableDictionary *)dictionary {
+    return [NSMutableDictionary dictionary];
+}
+
+- (NSString *)description {
+    return @"";
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+}
+
+
+- (id)initWithCoder:(NSCoder *)aDecoder {
+    self = [super init];
+    if(self) {
+    }
+    return self;
+}
+
+@end
+
+@implementation ${prefix}Token${suffix}
+
+- (id)initWithJson:(NSDictionary *)aDicJson {
+    self = [super initWithJson:aDicJson];
+    if(self && aDicJson) {
+        _numUserId = [aDicJson objectForKey:@"userId"];
+        _numRequestTime = [aDicJson objectForKey:@"requestTime"];
+        _strSecretkey = [aDicJson objectForKey:@"secretkey"];
+        _numDeviceType = [aDicJson objectForKey:@"deviceType"];
+        _strVersion = [aDicJson objectForKey:@"version"];
+    }
+    return self;
+}
+
+- (id)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+    if(self) {
+        _numUserId = [aDecoder decodeObjectForKey:@"cache_userId"];
+        _numRequestTime = [aDecoder decodeObjectForKey:@"cache_requestTime"];
+        _strSecretkey = [aDecoder decodeObjectForKey:@"cache_secretkey"];
+        _numDeviceType = [aDecoder decodeObjectForKey:@"cache_deviceType"];
+        _strVersion = [aDecoder decodeObjectForKey:@"cache_version"];
+    }
+    return self;
+}
+
+- (NSMutableDictionary *)dictionary {
+    NSMutableDictionary *mDic = [super dictionary];
+    if (self.numUserId) {
+        [mDic setObject:self.numUserId forKey:@"userId"];
+    }
+    if (self.numRequestTime) {
+        [mDic setObject:self.numRequestTime forKey:@"requestTime"];
+    }
+    if (self.strSecretkey) {
+        [mDic setObject:self.strSecretkey forKey:@"secretkey"];
+    }
+    [mDic setObject:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"] forKey:@"version"];
+    if (self.numDeviceType) {
+        [mDic setObject:self.numDeviceType forKey:@"deviceType"];
+    }
+    return mDic;
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [super encodeWithCoder:aCoder];
+    [aCoder encodeObject:self.numUserId forKey:@"cache_userId"];
+    [aCoder encodeObject:self.numRequestTime forKey:@"cache_requestTime"];
+    [aCoder encodeObject:self.strSecretkey forKey:@"cache_secretkey"];
+    [aCoder encodeObject:self.numDeviceType forKey:@"cache_deviceType"];
+    [aCoder encodeObject:self.strVersion forKey:@"cache_version"];
+}
+
+- (NSString *)description {
+    NSString *result = [super description];
+    result = [result stringByAppendingFormat:@"userId : %@\n",self.numUserId];
+    result = [result stringByAppendingFormat:@"requestTime : %@\n",self.numRequestTime];
+    result = [result stringByAppendingFormat:@"secretkey : %@\n",self.strSecretkey];
+    result = [result stringByAppendingFormat:@"version : %@\n",self.strVersion];
+    result = [result stringByAppendingFormat:@"deviceType : %@\n",self.numDeviceType];
+    return result;
+}
+
+@end
+
+@implementation ${prefix}Request${suffix}
+
+- (id)init {
+    self = [super init];
+    if (self) {
+        _strDeviceId = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+    }
+    return self;
+}
+
+- (id)initWithJson:(NSDictionary *)aDicJson {
+    self = [super initWithJson:aDicJson];
+    if(self && aDicJson) {
+        _token${suffix} = [[${prefix}Token${suffix} alloc] initWithJson:[aDicJson objectForKey:@"token"]];
+        _strDeviceId = [aDicJson objectForKey:@"deviceId"];
+    }
+    return self;
+}
+
+- (NSMutableDictionary *)dictionary {
+    NSMutableDictionary *mDic = [super dictionary];
+    [mDic setObject:[self.token${suffix} dictionary] forKey:@"token"];
+    if (self.strDeviceId) {
+        [mDic setObject:self.strDeviceId forKey:@"deviceId"];
+    }
+    return mDic;
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [super encodeWithCoder:aCoder];
+    [aCoder encodeObject:self.token${suffix} forKey:@"cache_token"];
+    [aCoder encodeObject:self.strDeviceId forKey:@"cache_deviceId"];
+}
+
+
+- (id)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+    if(self) {
+        _token${suffix}= [aDecoder decodeObjectForKey:@"cache_token"];
+        _strDeviceId = [aDecoder decodeObjectForKey:@"cache_deviceId"];
+    }
+    return self;
+}
+
+- (NSString *)description {
+    NSString *result = [super description];
+    result = [result stringByAppendingFormat:@"token : %@\n",self.token${suffix}];
+    result = [result stringByAppendingFormat:@"deviceId : %@\n",self.strDeviceId];
+    return result;
+}
+
+@end
+
+@implementation ${prefix}Response${suffix}
+
+- (id)initWithJson:(NSDictionary *)aDicJson {
+    self = [super initWithJson:aDicJson];
+    if(self && aDicJson) {
+        _strMessage  = [aDicJson objectForKey:@"message"];
+        _numCode  = [aDicJson objectForKey:@"code"];
+    }
+    return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [super encodeWithCoder:aCoder];
+    [aCoder encodeObject:self.strMessage forKey:@"cache_message"];
+    [aCoder encodeObject:self.numCode forKey:@"cache_code"];
+}
+
+
+- (id)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+    if(self) {
+        _strMessage = [aDecoder decodeObjectForKey:@"cache_message"];
+        _numCode = [aDecoder decodeObjectForKey:@"cache_code"];
+    }
+    return self;
+}
+
+- (NSMutableDictionary *)dictionary {
+    NSMutableDictionary *mDic = [super dictionary];
+    if (self.strMessage) {
+        [mDic setObject:self.strMessage forKey:@"message"];
+    }
+    if (self.numCode) {
+        [mDic setObject:self.numCode forKey:@"code"];
+    }
+    return mDic;
+}
+
+-(NSString *)description {
+    NSString *result = [super description];
+    result = [result stringByAppendingFormat:@"numCode : %@\n",self.numCode];
+    result = [result stringByAppendingFormat:@"strMessage : %@\n",self.strMessage];
+    return result;
+}
+
+@end

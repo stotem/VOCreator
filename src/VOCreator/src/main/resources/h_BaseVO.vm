@@ -1,9 +1,0 @@
-#import <Foundation/Foundation.h>
-
-@interface ${prefix}Base${suffix} : NSObject<NSCoding>
-
-- (id)initWithJson:(NSDictionary *)aDicJson;
-- (NSData *)jsonData;
-- (NSMutableDictionary *)dictionary;
-
-@end

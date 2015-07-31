@@ -1,11 +1,9 @@
 package com.forway.tools;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.nutz.json.JsonField;
-import sun.reflect.generics.reflectiveObjects.WildcardTypeImpl;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -28,22 +26,31 @@ public class Creator {
         }
         loadConfig(args[0]);
         // 获取包下所有的类
-        String scanPackage = properties.getProperty("VO.scanPackage","");
+        String scanPackage = properties.getProperty("VO.ScanPackage","");
         if (scanPackage.trim().length() <= 0) {
             System.err.println("[ERROR] scanPackage not found");
             return;
         }
         Set<Class> allClass = ClassScaner.scan(scanPackage.split(","));
-        Set<Entity> entities = new HashSet<>();
+        List<Entity> entities = new Vector<>();
         for (Class clas : allClass) {
             if (clas.isInterface()) {
                 continue;
             }
             // 获取类属性
-            Entity entity = getAllClass(clas);
-            entities.add(entity);
+            setAllClass(entities, clas);
         }
-
+        // 剔除重复属性
+        for (Entity entity : entities) {
+            Entity superEntity = new Entity();
+            superEntity.setClassName(entity.getSuperClass().getSimpleName());
+            superEntity.setPackageName(entity.getSuperClass().getPackage().getName());
+            if (entity.getProperties() != null && !entity.getProperties().isEmpty()) {
+                for (Property property : entity.getProperties()) {
+                    removePropertyFromSuperClass(entities, superEntity, property);
+                }
+            }
+        }
         // 调用模板生成文件
         outputFiles(entities);
 
@@ -69,7 +76,7 @@ public class Creator {
 
     }
 
-    private static void outputFiles(Set<Entity> entities) {
+    private static void outputFiles(List<Entity> entities) {
         //处理中文问题
         Velocity.setProperty("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
         Velocity.setProperty(Velocity.INPUT_ENCODING, "UTF-8");
@@ -96,25 +103,19 @@ public class Creator {
                 file.mkdirs();
             }
             root.put("entity", entity);
-            out(root, "h_template.vm", dic + prefix + entity.getClassName() + suffix + ".h");
-            out(root, "m_template.vm", dic + prefix + entity.getClassName() + suffix + ".m");
+            out(root, "Template_h.vm", dic + prefix + entity.getClassName() + suffix + ".h");
+            out(root, "Template_m.vm", dic + prefix + entity.getClassName() + suffix + ".m");
         }
 
         if (properties.getProperty("VO.CreateBasic","true").trim().equalsIgnoreCase("true")) {
             System.out.println("------------生成Base基础类--------------");
-            out(root, "h_BaseVO.vm", outDic + prefix + "Base" + suffix + ".h");
-            out(root, "m_BaseVO.vm", outDic + prefix + "Base" + suffix + ".m");
-            out(root, "h_RequestVO.vm", outDic + prefix + "Request" + suffix + ".h");
-            out(root, "m_RequestVO.vm", outDic + prefix + "Request" + suffix + ".m");
-            out(root, "h_ResponseVO.vm", outDic + prefix + "Response" + suffix + ".h");
-            out(root, "m_ResponseVO.vm", outDic + prefix + "Response" + suffix + ".m");
-            out(root, "h_TokenVO.vm", outDic + prefix + "Token" + suffix + ".h");
-            out(root, "m_TokenVO.vm", outDic + prefix + "Token" + suffix + ".m");
+            out(root, "BaseVO_h.vm", outDic + prefix + "Base" + suffix + ".h");
+            out(root, "BaseVO_m.vm", outDic + prefix + "Base" + suffix + ".m");
         }
     }
 
     public static String getPackageDir(String pageName) {
-        String scanPackage = properties.getProperty("VO.scanPackage");
+        String scanPackage = properties.getProperty("VO.ScanPackage");
         String[] scanPkgs = scanPackage.split(",");
         for (String scanPkg : scanPkgs) {
             pageName = pageName.replaceAll(scanPkg, "");
@@ -151,51 +152,67 @@ public class Creator {
         }
     }
 
-    private static Entity getAllClass(Class clas) throws IllegalAccessException, InstantiationException {
-        Entity entity = new Entity();
-        entity.setClassName(clas.getSimpleName());
-        entity.setPackageName(clas.getPackage().getName());
-        entity.setSuperClassName(clas.getSuperclass().getSimpleName());
-        Field[] declaredFields = clas.getDeclaredFields();
-
+    private static void setAllClass(List<Entity> entities, Class clas) throws IllegalAccessException, InstantiationException {
+        if (clas.isEnum() || Exception.class.isAssignableFrom(clas)) {
+            System.out.println("-- skip class - [" + clas + "]");
+            return;
+        }
         Object obj = null;
         try {
             obj = clas.newInstance();
-        }catch(Exception e) {}
-        for (Field declaredField : declaredFields) {
-            getAllProperty(obj,declaredField, entity);
+        }catch(Exception e) {
         }
-        return entity;
 
+        Entity entity = new Entity();
+        entity.setClassName(clas.getSimpleName());
+        entity.setPackageName(clas.getPackage().getName());
+        entity.setSuperClass(clas.getSuperclass());
+        entity.setSuperClassName(clas.getSuperclass().getSimpleName());
+        Field[] declaredFields = clas.getDeclaredFields();
+
+        for (Field declaredField : declaredFields) {
+            getAllProperty(entities, obj,declaredField, entity);
+        }
+        entities.add(entity);
     }
 
-    private static void getAllProperty(Object obj, Field declaredField, Entity entity) {
+    private static void getAllProperty(List<Entity> entities, Object obj, Field declaredField, Entity entity) {
         if (declaredField.getName().equalsIgnoreCase("serialVersionUID")) {
             return;
         }
 
-        // 如果为常量
+        // 如果为枚举
         Class<?> fieldType = declaredField.getType();
+        if (fieldType.isEnum() || Exception.class.isAssignableFrom(fieldType)) {
+            System.out.println("-- skip property - [" + declaredField.getName() + "] - "+fieldType);
+            return;
+        }
+
         int modifiers = declaredField.getModifiers();
+        if (Modifier.isPrivate(modifiers) && Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers)) {
+            System.out.println("-- skip constant - [" + declaredField.getName() + "]");
+            return;
+        }
         if (obj != null && Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers)
-                && (fieldType.isAssignableFrom(int.class) || fieldType.isAssignableFrom(Integer.class)
-                || fieldType.isAssignableFrom(float.class) || fieldType.isAssignableFrom(Float.class)
-                || fieldType.isAssignableFrom(double.class) || fieldType.isAssignableFrom(Double.class)
-                || fieldType.isAssignableFrom(long.class) || fieldType.isAssignableFrom(Long.class) || fieldType.isAssignableFrom(String.class)
-                || fieldType.isAssignableFrom(boolean.class) || fieldType.isAssignableFrom(Boolean.class))) {
+                && (int.class.isAssignableFrom(fieldType) || Integer.class.isAssignableFrom(fieldType)
+                || float.class.isAssignableFrom(fieldType) || Float.class.isAssignableFrom(fieldType)
+                || double.class.isAssignableFrom(fieldType) || Double.class.isAssignableFrom(fieldType)
+                || long.class.isAssignableFrom(fieldType) || Long.class.isAssignableFrom(fieldType) || String.class.isAssignableFrom(fieldType)
+                || boolean.class.isAssignableFrom(fieldType) || Boolean.class.isAssignableFrom(fieldType))) {
             try {
                 Object value = declaredField.get(obj);
                 if (value == null) {
                     return;
                 }
+
                 ConstProperty property = new ConstProperty();
                 property.setName(declaredField.getName());
-                if (fieldType.isAssignableFrom(boolean.class) || fieldType.isAssignableFrom(Boolean.class)) {
+                if (boolean.class.isAssignableFrom(fieldType) || Boolean.class.isAssignableFrom(fieldType)) {
                     property.setValue((boolean)value ? "1":"0");
                 } else {
                     property.setValue(value.toString().trim());
                 }
-                if (fieldType.isAssignableFrom(String.class)) {
+                if (String.class.isAssignableFrom(fieldType)) {
                     entity.addConstantString(property);
                 }
                 else {
@@ -211,7 +228,7 @@ public class Creator {
         property.setName(declaredField.getName());
         property.setType(fieldType.getSimpleName());
 
-        if (fieldType.isAssignableFrom(List.class) || fieldType.isAssignableFrom(Set.class) || fieldType.equals(Map.class)) {
+        if (List.class.isAssignableFrom(fieldType) || Set.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)) {
             Type[] types = ((ParameterizedType) declaredField.getGenericType()).getActualTypeArguments();
             if (types.length > 0) {
                 Type argsType = types[types.length-1];
@@ -227,20 +244,53 @@ public class Creator {
                 }
                 property.setGenericsType(argsClass.getSimpleName());
 
-                if (!argsClass.isPrimitive() && !argsClass.equals(Integer.class) && !argsClass.equals(String.class)
-                        && !argsClass.equals(Long.class) && !argsClass.equals(Timestamp.class) && !argsClass.equals(Date.class) && !argsClass.equals(Map.class)){
+                if (!argsClass.isPrimitive() && !fieldType.isArray() && !argsClass.equals(Integer.class) && !argsClass.equals(String.class)
+                        && !argsClass.equals(Long.class) && !argsClass.equals(Timestamp.class)
+                        && !argsClass.equals(Date.class) && !argsClass.equals(Map.class)
+                        && !argsClass.equals(Boolean.class) && !argsClass.equals(boolean.class)
+                        && !argsClass.equals(Byte.class) && !argsClass.equals(byte.class)&& !argsClass.equals(Object.class)) {
                     entity.addImportClassName(argsClass.getSimpleName());
                 }
             }
         }
-        else if (!fieldType.isPrimitive() && !fieldType.equals(Integer.class) && !fieldType.equals(String.class)
-                && !fieldType.equals(Long.class) && !fieldType.equals(Date.class) && !fieldType.equals(Float.class)
-                && !fieldType.equals(Double.class)&& !fieldType.equals(Timestamp.class) && !fieldType.equals(Short.class)){
+        else if (!fieldType.isPrimitive() && !fieldType.isArray() && !Integer.class.equals(fieldType) && !String.class.equals(fieldType)
+                && !Long.class.equals(fieldType) && !Date.class.equals(fieldType) && !Float.class.equals(fieldType)
+                && !Double.class.equals(fieldType)&& !Timestamp.class.equals(fieldType) && !Short.class.equals(fieldType)
+                && !fieldType.equals(Boolean.class) && !fieldType.equals(boolean.class)
+                && !fieldType.equals(Byte.class) && !fieldType.equals(byte.class)&& !fieldType.equals(Object.class)) {
             entity.addImportClassName(fieldType.getSimpleName());
         }
         JsonField jsonField = declaredField.getAnnotation(JsonField.class);
         property.setShortName(jsonField != null ? jsonField.value() : property.getName());
 
+        // Check SuperClass Property
+        Entity superEntity = new Entity();
+        superEntity.setClassName(entity.getSuperClass().getSimpleName());
+        superEntity.setPackageName(entity.getSuperClass().getPackage().getName());
+
+        removePropertyFromSuperClass(entities, superEntity, property);
         entity.addProperties(property);
+    }
+
+    public static void removePropertyFromSuperClass(List<Entity> entities, Entity entity, Property property) {
+        int idx = entities.indexOf(entity);
+        if (idx == -1) {
+            return;
+        }
+        entity = entities.get(idx);
+        List<Property> properties = entity.getProperties();
+        if (properties == null || properties.isEmpty()) {
+            return;
+        }
+        if (properties.contains(property)) {
+            properties.remove(property);
+        }
+
+        if (entity.getSuperClass() != null && !entity.getSuperClass().equals(Object.class)) {
+            Entity superEntity = new Entity();
+            superEntity.setClassName(entity.getSuperClass().getSimpleName());
+            superEntity.setPackageName(entity.getSuperClass().getPackage().getName());
+            removePropertyFromSuperClass(entities, superEntity, property);
+        }
     }
 }

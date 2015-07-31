@@ -1,9 +1,0 @@
-#import <Foundation/Foundation.h>
-#import "${prefix}Base${suffix}.h"
-
-@interface ${prefix}Response${suffix} : ${prefix}Base${suffix}
-
-@property(nonatomic,strong) NSNumber *numCode;
-@property(nonatomic,copy)   NSString *strMessage;
-
-@end

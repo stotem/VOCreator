@@ -11,6 +11,7 @@ import java.util.Set;
 public class Entity {
     private String className;
     private String superClassName;
+    private Class superClass;
     private String packageName;
     private List<Property> properties;
     private Set<ConstProperty> constants;
@@ -19,6 +20,14 @@ public class Entity {
 
     public String getPackageName() {
         return packageName;
+    }
+
+    public Class getSuperClass() {
+        return superClass;
+    }
+
+    public void setSuperClass(Class superClass) {
+        this.superClass = superClass;
     }
 
     public void setPackageName(String packageName) {
@@ -90,6 +99,25 @@ public class Entity {
             setConstantString(new HashSet<ConstProperty>());
         }
         getConstantString().add(property);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Entity entity = (Entity) o;
+
+        if (!className.equals(entity.className)) return false;
+        return packageName.equals(entity.packageName);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = className.hashCode();
+        result = 31 * result + packageName.hashCode();
+        return result;
     }
 
     @Override
