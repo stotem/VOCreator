@@ -84,30 +84,44 @@
         [mDic setObject:self.num${codeName} forKey:@"${property.name}"];
     }
     #elseif(${property.type} == "List" || ${property.type} == "Set"||${property.type} == "byte[]"||${property.type} == "Byte[]"||${property.type} == "double[]"||${property.type} == "Double[]"||${property.type} == "short[]"||${property.type} == "Short[]"||${property.type} == "int[]"||${property.type} == "Integer[]"||${property.type} == "long[]"||${property.type} == "Long[]"||${property.type} == "float[]"||${property.type} == "Float[]"||${property.type} == "Boolean[]"||${property.type} == "boolean[]")
-    NSMutableArray *mArr${codeName} = [NSMutableArray array];
+
     #if(!${property.genericsType}  || ${property.genericsType} == "Object"|| ${property.genericsType} == "Byte"||${property.genericsType} == "byte"||${property.genericsType}=="int"||${property.genericsType}=="Integer"||${property.genericsType} == "long"||${property.genericsType} == "Long"||${property.genericsType} == "double"||${property.genericsType} == "Double"||${property.genericsType} == "short"||${property.genericsType} == "Short"||${property.genericsType}=="String"||${property.genericsType} == "float"||${property.genericsType} == "Float")
-    for(id item in self.mArray${codeName}){
-        [mArr${codeName} addObject:item];
+    if (self.mArray${codeName}) {
+        NSMutableArray *mArr${codeName} = [NSMutableArray array];
+        for(id item in self.mArray${codeName}){
+            [mArr${codeName} addObject:item];
+        }
+        [mDic setObject:mArr${codeName} forKey:@"${property.name}"];
     }
     #else
-    for(${prefix}${property.genericsType}${suffix} *vo in self.mArray${codeName}){
-        [mArr${codeName} addObject:[vo dictionary]];
+    if (self.mArray${codeName}) {
+        NSMutableArray *mArr${codeName} = [NSMutableArray array];
+        for(${prefix}${property.genericsType}${suffix} *vo in self.mArray${codeName}){
+            [mArr${codeName} addObject:[vo dictionary]];
+        }
+        [mDic setObject:mArr${codeName} forKey:@"${property.name}"];
     }
     #end
-    [mDic setObject:mArr${codeName} forKey:@"${property.name}"];
+
     #elseif(${property.type} == "Map")
         #if(!${property.genericsType}  || ${property.genericsType} == "Object"|| ${property.genericsType} == "Byte"||${property.genericsType} == "byte"||${property.genericsType} == "Boolean"||${property.genericsType} == "boolean"||${property.genericsType} == "double"||${property.genericsType} == "Double"||${property.genericsType} == "short"||${property.genericsType} == "Short"||${property.genericsType}=="int"||${property.genericsType}=="Integer"||${property.genericsType} == "long"||${property.genericsType} == "Long"||${property.genericsType}=="String"||${property.genericsType} == "float"||${property.genericsType} == "Float")
-        [mDic setObject:self.mDic${codeName} forKey:@"${property.name}"];
-        #else
-        NSMutableDictionary *tmpMDic${codeName}= [[NSMutableDictionary alloc]init];
-        for (id<NSCopying> key in [self.mDic${codeName} allKeys]) {
-            [tmpMDic${codeName} setObject:[self.mDic${codeName}[key] dictionary] forKey:key];
+        if (self.mDic${codeName}) {
+            [mDic setObject:self.mDic${codeName} forKey:@"${property.name}"];
         }
-        [mDic setObject:tmpMDic${codeName} forKey:@"${property.name}"];
+        #else
+        if (self.mDic${codeName}) {
+            NSMutableDictionary *tmpMDic${codeName}= [[NSMutableDictionary alloc]init];
+            for (id<NSCopying> key in [self.mDic${codeName} allKeys]) {
+                [tmpMDic${codeName} setObject:[self.mDic${codeName}[key] dictionary] forKey:key];
+            }
+            [mDic setObject:tmpMDic${codeName} forKey:@"${property.name}"];
+        }
         #end
 
     #else
-    [mDic setObject:[self.${property.name}${suffix} dictionary] forKey:@"${property.name}"];
+    if (self.${property.name}${suffix}) {
+        [mDic setObject:[self.${property.name}${suffix} dictionary] forKey:@"${property.name}"];
+    }
     #end
 #end
     return mDic;
